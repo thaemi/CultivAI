@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
 import pandas as pd
 from datetime import datetime, timedelta
 
@@ -45,6 +44,7 @@ st.markdown("""
             color: white;
             padding: 20px;
             text-align: left;
+            border-radius: 0;
         }
         
         .header-title {
@@ -79,8 +79,6 @@ st.markdown("""
         
         .plant-card:hover {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-            transition: all 0.3s ease;
         }
         
         /* Status badges */
@@ -90,6 +88,7 @@ st.markdown("""
             font-size: 12px;
             font-weight: 500;
             white-space: nowrap;
+            display: inline-block;
         }
         
         .status-warning {
@@ -151,22 +150,6 @@ st.markdown("""
             border-radius: 3px;
         }
         
-        .option-btn {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .option-btn:hover {
-            border-color: #2E7D32;
-            background: #F1F8E9;
-        }
-        
         /* Problem alert */
         .problem-alert {
             background: #FFF3CD;
@@ -221,30 +204,6 @@ st.markdown("""
             margin-bottom: 12px;
             letter-spacing: 0.5px;
             margin-top: 20px;
-        }
-        
-        /* Tabs */
-        .tabs-container {
-            display: flex;
-            gap: 24px;
-            border-bottom: 1px solid #e0e0e0;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-        }
-        
-        .tab {
-            padding: 12px 0;
-            font-size: 13px;
-            font-weight: 500;
-            color: #999;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-        
-        .tab.active {
-            color: #2E7D32;
-            border-bottom-color: #2E7D32;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -320,6 +279,8 @@ def show_home():
         </div>
     """, unsafe_allow_html=True)
     
+    st.write("")
+    
     # Quick actions
     col1, col2 = st.columns(2)
     
@@ -333,21 +294,29 @@ def show_home():
             st.session_state.current_screen = 'camera'
             st.rerun()
     
+    st.write("")
+    
     # Plants section
     st.markdown('<p class="section-title">Hoje você precisa regar:</p>', unsafe_allow_html=True)
     
-    for plant in plants_today:
-        col1, col2, col3 = st.columns([1, 4, 1])
+    for idx, plant in enumerate(plants_today):
+        col1, col2, col3 = st.columns([0.5, 3, 1])
         
         with col1:
-            st.write(plant['emoji'], unsafe_allow_html=True)
+            st.write(plant['emoji'])
         
         with col2:
-            st.write(f"<strong>{plant['name']}</strong><br><small>{plant['status']}</small>", unsafe_allow_html=True)
+            st.write(f"**{plant['name']}**  \n{plant['status']}")
         
         with col3:
             badge_class = f"status-badge status-{plant['badge_type']}"
             st.markdown(f'<span class="{badge_class}">{plant["days"]}</span>', unsafe_allow_html=True)
+        
+        if idx < len(plants_today) - 1:
+            st.divider()
+    
+    st.write("")
+    st.write("")
     
     # Add plant button
     if st.button('+ Adicionar Planta', use_container_width=True, key='btn_add_plant'):
@@ -375,10 +344,8 @@ def show_quiz():
     st.write("")
     
     # Options
-    selected = None
     for idx, option in enumerate(quiz_data[current_q]['options']):
         if st.button(option, use_container_width=True, key=f'quiz_option_{current_q}_{idx}'):
-            selected = idx
             st.session_state.selected_options[current_q] = idx
     
     st.write("")
@@ -404,15 +371,19 @@ def show_quiz():
 
 # ===== CAMERA SCREEN =====
 def show_camera():
+    st.write("")
+    st.write("")
     st.markdown("""
-        <div style="background: #000; height: 400px; display: flex; justify-content: center; align-items: center; color: white; border-radius: 12px; margin-bottom: 16px;">
-            <div style="text-align: center;">
-                <div style="font-size: 80px; opacity: 0.6;">📸</div>
-                <p style="margin-top: 12px; opacity: 0.8;">Câmera de captura</p>
-                <p style="font-size: 12px; opacity: 0.6;">Enquadre a folha dentro do círculo</p>
-            </div>
+        <div style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(46, 125, 50, 0.5) 100%); 
+                    height: 400px; display: flex; justify-content: center; align-items: center; 
+                    color: white; border-radius: 12px; margin-bottom: 16px; flex-direction: column;">
+            <div style="font-size: 100px; opacity: 0.6; margin-bottom: 16px;">📸</div>
+            <p style="margin: 0; opacity: 0.9; font-weight: 500;">Câmera de captura</p>
+            <p style="font-size: 12px; opacity: 0.7; margin: 8px 0 0 0;">Enquadre a folha dentro do círculo</p>
         </div>
     """, unsafe_allow_html=True)
+    
+    st.write("")
     
     if st.button('🎬 CAPTURAR', use_container_width=True, key='btn_capture'):
         st.session_state.current_screen = 'diagnosis'
@@ -435,11 +406,13 @@ def show_diagnosis():
     with col2:
         st.markdown('<span class="status-badge" style="background: #D4EDDA; color: #155724;">94% seguro</span>', unsafe_allow_html=True)
     
+    st.write("")
+    
     # Plant image
     st.markdown("""
         <div style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(46, 125, 50, 0.4) 100%); 
                     height: 240px; display: flex; justify-content: center; align-items: center; 
-                    border-radius: 12px; margin-bottom: 16px; font-size: 80px;">
+                    border-radius: 12px; margin-bottom: 16px; font-size: 100px;">
             🌿
         </div>
     """, unsafe_allow_html=True)
@@ -458,19 +431,27 @@ def show_diagnosis():
     """, unsafe_allow_html=True)
     
     # Tabs
-    tab1, tab2, tab3 = st.tabs(["Planta", "Problema", "Solução"])
+    tab1, tab2, tab3 = st.tabs(["🌿 Planta", "⚠️ Problema", "✅ Solução"])
     
     with tab1:
-        st.write("Informações detalhadas sobre a planta...")
+        st.write("**Informações detalhadas sobre a planta:**")
+        st.write("""
+        - 🌡️ Temperatura ideal: 18-25°C
+        - 💡 Luz: Indireta (sem luz solar direta)
+        - 💧 Rega: A cada 7-10 dias
+        - 🌍 Solo: Bem drenado
+        - ⚠️ Tóxico para pets: Sim
+        """)
     
     with tab2:
         # Problem alert
         st.markdown("""
             <div class="problem-alert">
                 <div class="alert-title">⚠️ POSSÍVEL PROBLEMA IDENTIFICADO:</div>
-                <div class="alert-content">Ácaro-aranha</div>
-                <div style="font-size: 12px; color: #856404; opacity: 0.8; margin-top: 4px;">
-                    Confiança: 87% | Folhas com pequenas manchas
+                <div class="alert-content" style="font-size: 16px; font-weight: 600; margin-top: 8px;">Ácaro-aranha</div>
+                <div style="font-size: 12px; color: #856404; opacity: 0.8; margin-top: 8px;">
+                    <strong>Confiança:</strong> 87%<br>
+                    <strong>Sintomas:</strong> Folhas com pequenas manchas e teias finas
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -482,18 +463,24 @@ def show_diagnosis():
                 <div class="solution-title">✅ SOLUÇÃO RÁPIDA (recomendado):</div>
                 <div class="solution-step">
                     <span class="step-number">1.</span>
-                    Pulverize com água + sabão neutro
+                    Pulverize com água + sabão neutro (1 colher em 1L de água)
                 </div>
                 <div class="solution-step">
                     <span class="step-number">2.</span>
-                    Limpe delicadamente cada folha
+                    Limpe delicadamente cada folha com algodão macio
                 </div>
                 <div class="solution-step">
                     <span class="step-number">3.</span>
                     Repita em 3 dias se necessário
                 </div>
+                <div class="solution-step">
+                    <span class="step-number">4.</span>
+                    Mantenha a planta isolada de outras por 1 semana
+                </div>
             </div>
         """, unsafe_allow_html=True)
+    
+    st.write("")
     
     # Action buttons
     col1, col2, col3 = st.columns(3)
@@ -516,12 +503,23 @@ def show_diagnosis():
 
 # ===== MAIN APP =====
 def main():
+    # Remove margin top
+    st.markdown("""
+        <style>
+            .appViewContainer {
+                padding-top: 0;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+    
     # Title
     st.markdown("""
-        <h1 style="text-align: center; color: #2E7D32; margin-bottom: 20px;">
+        <h1 style="text-align: center; color: #2E7D32; margin-bottom: 20px; margin-top: 0;">
             🌿 Primeira versão do CultivAI
         </h1>
     """, unsafe_allow_html=True)
+    
+    st.write("")
     
     # Screen routing
     if st.session_state.current_screen == 'home':
@@ -534,8 +532,10 @@ def main():
         show_diagnosis()
     
     # Bottom navigation (info)
+    st.write("")
+    st.write("")
     st.markdown("""
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; 
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0; 
                     text-align: center; font-size: 12px; color: #999;">
             <div style="display: flex; justify-content: space-around;">
                 <div>🏠 Home</div>
